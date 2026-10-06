@@ -1,0 +1,135 @@
+import { AspectSentimentItem, AutomatedInsight, CleanedReviewRow, DataQualityReport, EDAMetrics, SentimentAnalysisResult, TextMiningResult, TopicInfo } from '../types';
+
+export function generateHTMLReport(
+  fileName: string,
+  quality: DataQualityReport,
+  eda: EDAMetrics,
+  sentiment: SentimentAnalysisResult,
+  textMining: TextMiningResult,
+  topics: TopicInfo[],
+  aspects: AspectSentimentItem[],
+  insights: AutomatedInsight[]
+): string {
+  const timestamp = new Date().toLocaleString();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Universal Review Mining Intelligence Report - ${fileName}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #0f172a; margin: 0; padding: 40px; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    h1 { color: #1e293b; font-size: 28px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    h2 { color: #2563eb; font-size: 20px; margin-top: 32px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0; }
+    .kpi-card { background: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; }
+    .kpi-val { font-size: 24px; font-weight: bold; color: #1e293b; }
+    .kpi-lbl { font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background: #f8fafc; font-weight: 600; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-pos { background: #dcfce7; color: #15803d; }
+    .badge-neg { background: #fee2e2; color: #b91c1c; }
+    .badge-neu { background: #f1f5f9; color: #475569; }
+    .insight-card { background: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 18px; border-radius: 4px; margin-bottom: 12px; }
+    .footer { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Universal Review Mining Intelligence System</h1>
+    <p><strong>Dataset File:</strong> ${fileName} | <strong>Report Generated:</strong> ${timestamp}</p>
+    
+    <h2>1. Data Quality & Health Overview</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val">${quality.totalRows}</div><div class="kpi-lbl">Total Rows</div></div>
+      <div class="kpi-card"><div class="kpi-val">${quality.totalColumns}</div><div class="kpi-lbl">Columns</div></div>
+      <div class="kpi-card"><div class="kpi-val">${quality.missingValuesPct}%</div><div class="kpi-lbl">Missing Values</div></div>
+      <div class="kpi-card"><div class="kpi-val">${quality.duplicateRowsCount}</div><div class="kpi-lbl">Duplicates</div></div>
+    </div>
+
+    <h2>2. Executive Summary Metrics</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val">${eda.totalReviews}</div><div class="kpi-lbl">Analyzed Reviews</div></div>
+      <div class="kpi-card"><div class="kpi-val">${eda.avgRating} / 5</div><div class="kpi-lbl">Avg Rating</div></div>
+      <div class="kpi-card"><div class="kpi-val">${sentiment.positivePct}%</div><div class="kpi-lbl">Positive Pct</div></div>
+      <div class="kpi-card"><div class="kpi-val">${sentiment.negativePct}%</div><div class="kpi-lbl">Negative Pct</div></div>
+    </div>
+
+    <h2>3. Automated Data-Driven Insights</h2>
+    ${insights.map(i => `
+      <div class="insight-card">
+        <strong>[${i.category}] ${i.title}</strong>
+        <p style="margin:4px 0;">${i.statement}</p>
+        <small style="color:#64748b;">Evidence: ${i.evidence}</small>
+      </div>
+    `).join('')}
+
+    <h2>4. Aspect-Based Sentiment Breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>Aspect</th><th>Total Mentions</th><th>Positive %</th><th>Negative %</th></tr>
+      </thead>
+      <tbody>
+        ${aspects.map(a => `
+          <tr>
+            <td><strong>${a.aspect}</strong></td>
+            <td>${a.total}</td>
+            <td><span class="badge badge-pos">${a.positivePct}%</span></td>
+            <td><span class="badge badge-neg">${a.negativePct}%</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <h2>5. Discovered Topics (LDA Topic Modeling)</h2>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Weight %</th><th>Key Identifiers</th></tr>
+      </thead>
+      <tbody>
+        ${topics.map(t => `
+          <tr>
+            <td><strong>${t.name}</strong></td>
+            <td>${t.weight}%</td>
+            <td>${t.keywords.join(', ')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div class="footer">Generated by Universal Review Mining & Intelligence System</div>
+  </div>
+</body>
+</html>`;
+}
+
+export function generateCleanedCSV(rows: CleanedReviewRow[]): string {
+  if (!rows || rows.length === 0) return '';
+  const headers = ['id', 'original_text', 'clean_text', 'rating', 'sentiment', 'sentiment_score', 'product', 'category', 'date', 'price'];
+  const csvRows = [headers.join(',')];
+
+  rows.forEach(r => {
+    const origEscaped = `"${r.originalText.replace(/"/g, '""')}"`;
+    const cleanEscaped = `"${r.cleanText.replace(/"/g, '""')}"`;
+    const prodEscaped = `"${(r.product || '').replace(/"/g, '""')}"`;
+    const catEscaped = `"${(r.category || '').replace(/"/g, '""')}"`;
+    
+    csvRows.push([
+      r.id,
+      origEscaped,
+      cleanEscaped,
+      r.rating ?? '',
+      r.sentiment ?? '',
+      r.sentimentScore ?? '',
+      prodEscaped,
+      catEscaped,
+      r.date ?? '',
+      r.price ?? ''
+    ].join(','));
+  });
+
+  return csvRows.join('\n');
+}

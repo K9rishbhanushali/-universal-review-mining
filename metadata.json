@@ -1,0 +1,6 @@
+{
+  "name": "Universal Review Mining & Intelligence System",
+  "description": "An end-to-end review analytics platform for dataset upload, column detection, EDA, sentiment classification, text mining, topic modeling, association rules, and automated customer insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
